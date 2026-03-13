@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pi-Gotcha</title>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Pi-Gotcha</h1>
+    <span id="clock"></span>
+  </header>
+
+  <!-- Stats bar -->
+  <section class="stats-bar">
+    <div class="stat-card"><div class="stat-value" id="total-queries">--</div><div class="stat-label">DNS Queries</div></div>
+    <div class="stat-card"><div class="stat-value" id="blocked-queries">--</div><div class="stat-label">Blocked</div></div>
+    <div class="stat-card"><div class="stat-value" id="block-percent">--%</div><div class="stat-label">Block Rate</div></div>
+    <div class="stat-card"><div class="stat-value" id="total-devices">--</div><div class="stat-label">Devices Seen</div></div>
+    <div class="stat-card"><div class="stat-value" id="blocklist-size">--</div><div class="stat-label">On Blocklist</div></div>
+  </section>
+
+  <main>
+    <!-- Left column -->
+    <div class="col">
+
+      <!-- Live DNS Feed -->
+      <div class="panel">
+        <h2>Live DNS Feed</h2>
+        <table id="dns-table">
+          <thead><tr><th>Time</th><th>Client</th><th>Domain</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- Top Domains -->
+      <div class="panel">
+        <h2>Top Domains</h2>
+        <canvas id="domains-chart" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Right column -->
+    <div class="col">
+
+      <!-- World Map -->
+      <div class="panel">
+        <h2>Traffic Map</h2>
+        <div id="map"></div>
+      </div>
+
+      <!-- Block Manager -->
+      <div class="panel">
+        <h2>Blocklist</h2>
+        <div class="block-form">
+          <input id="block-input" type="text" placeholder="domain.com" />
+          <input id="block-reason" type="text" placeholder="Reason (optional)" />
+          <button onclick="blockDomain()">Block</button>
+        </div>
+        <table id="blocklist-table">
+          <thead><tr><th>Domain</th><th>Reason</th><th>Added</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- Devices -->
+      <div class="panel">
+        <h2>Devices</h2>
+        <table id="devices-table">
+          <thead><tr><th>IP</th><th>MAC</th><th>Last Seen</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
