@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from database.db import get_db
+from api.routes.traffic import STANDARD_PORTS
 
 router = APIRouter()
 
@@ -32,12 +33,10 @@ async def get_stats():
         "SELECT COUNT(*) as c FROM blocklist"
     ))[0]["c"]
 
-    total_alerts = (await db.execute_fetchall(
-        "SELECT COUNT(*) as c FROM alerts"
-    ))[0]["c"]
-
-    ioc_indicators = (await db.execute_fetchall(
-        "SELECT COUNT(*) as c FROM ioc_feeds"
+    placeholders = ",".join("?" * len(STANDARD_PORTS))
+    nonstandard_conns = (await db.execute_fetchall(
+        f"SELECT COUNT(DISTINCT dst_ip || ':' || dst_port) as c FROM traffic WHERE dst_port NOT IN ({placeholders})",
+        STANDARD_PORTS,
     ))[0]["c"]
 
     await db.close()
@@ -50,8 +49,7 @@ async def get_stats():
         "block_percent":   block_pct,
         "total_traffic":   total_traffic,
         "total_bytes":     total_bytes,
-        "total_devices":   total_devices,
-        "blocklist_size":  blocklist_size,
-        "total_alerts":    total_alerts,
-        "ioc_indicators":  ioc_indicators,
+        "total_devices":      total_devices,
+        "blocklist_size":     blocklist_size,
+        "nonstandard_conns":  nonstandard_conns,
     }

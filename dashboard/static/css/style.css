@@ -85,24 +85,6 @@ tr:hover td { background: rgba(88,166,255,0.05); }
 
 .badge-blocked  { color: var(--red);   font-weight: bold; }
 .badge-allowed  { color: var(--green); }
-.badge-medium   { color: #e3b341; font-weight: bold; }
-.badge-low      { color: var(--muted); font-weight: bold; }
-
-/* Alerts stat card — glows red when alerts are present */
-#alerts-stat-card.has-alerts {
-  border-color: var(--red);
-  box-shadow: 0 0 8px rgba(248, 81, 73, 0.4);
-}
-#alerts-stat-card.has-alerts .stat-value { color: var(--red); }
-
-.detail-cell { color: var(--muted); font-size: 0.78rem; max-width: 200px; }
-
-.btn-small {
-  font-size: 0.72rem;
-  padding: 3px 8px;
-  margin-left: 8px;
-  vertical-align: middle;
-}
 
 button {
   background: var(--accent);

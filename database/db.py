@@ -39,27 +39,6 @@ CREATE TABLE IF NOT EXISTS devices (
     last_seen  DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS ioc_feeds (
-    id        INTEGER PRIMARY KEY AUTOINCREMENT,
-    indicator TEXT,
-    type      TEXT,
-    source    TEXT,
-    category  TEXT,
-    severity  TEXT,
-    UNIQUE(indicator, source)
-);
-
-CREATE TABLE IF NOT EXISTS alerts (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    timestamp  DATETIME DEFAULT CURRENT_TIMESTAMP,
-    client_ip  TEXT,
-    indicator  TEXT,
-    ioc_source TEXT,
-    category   TEXT,
-    severity   TEXT,
-    detail     TEXT,
-    blocked    INTEGER DEFAULT 0
-);
 """
 
 

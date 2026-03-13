@@ -38,11 +38,8 @@ async function refreshStats() {
   document.getElementById("block-percent").textContent   = s.block_percent + "%";
   document.getElementById("total-devices").textContent   = s.total_devices;
   document.getElementById("blocklist-size").textContent  = s.blocklist_size;
-  document.getElementById("total-bytes").textContent     = fmtBytes(s.total_bytes);
-  document.getElementById("total-alerts").textContent    = s.total_alerts.toLocaleString();
-  document.getElementById("ioc-indicators").textContent  = s.ioc_indicators.toLocaleString();
-  // Highlight the alerts card if there are active alerts
-  document.getElementById("alerts-stat-card").classList.toggle("has-alerts", s.total_alerts > 0);
+  document.getElementById("total-bytes").textContent        = fmtBytes(s.total_bytes);
+  document.getElementById("nonstandard-conns").textContent  = s.nonstandard_conns.toLocaleString();
 }
 
 // ── DNS Feed ───────────────────────────────────────────────────────────
@@ -151,6 +148,27 @@ async function refreshTimeline() {
   });
 }
 
+// ── Non-standard Ports ─────────────────────────────────────────────────
+async function refreshNonstandardPorts() {
+  const rows  = await apiFetch("/api/traffic/nonstandard-ports?limit=50");
+  const tbody = document.querySelector("#nonstandard-table tbody");
+  tbody.innerHTML = "";
+  for (const r of rows) {
+    const geo = r.geo;
+    const loc = geo ? [geo.city, geo.country].filter(Boolean).join(", ") || "Unknown" : "Unknown";
+    const tr  = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${r.dst_ip}</td>
+      <td><b>${r.dst_port}</b></td>
+      <td>${r.protocol}</td>
+      <td>${r.connections.toLocaleString()}</td>
+      <td>${fmtBytes(r.total_bytes || 0)}</td>
+      <td>${loc}</td>
+      <td>${fmt(r.last_seen)}</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
 // ── Traffic Map ────────────────────────────────────────────────────────
 function initMap() {
   map = L.map("map").setView([20, 0], 2);
@@ -222,43 +240,6 @@ async function unblock(domain) {
   refreshAll();
 }
 
-// ── IOC Alerts ─────────────────────────────────────────────────────────
-const SEVERITY_CLASS = { high: "badge-blocked", medium: "badge-medium", low: "badge-low" };
-
-async function refreshAlerts() {
-  const rows  = await apiFetch("/api/alerts/?limit=50");
-  const tbody = document.querySelector("#alerts-table tbody");
-  tbody.innerHTML = "";
-  for (const r of rows) {
-    const cls = SEVERITY_CLASS[r.severity] || "";
-    const tr  = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${fmt(r.timestamp)}</td>
-      <td>${r.client_ip}</td>
-      <td><b>${r.indicator}</b></td>
-      <td>${r.ioc_source}</td>
-      <td><span class="${cls}">${r.severity.toUpperCase()}</span></td>
-      <td class="detail-cell">${r.detail || ""}</td>
-      <td>
-        <button onclick="quickBlock('${r.indicator}')">Block</button>
-        <button class="danger" onclick="dismissAlert(${r.id})">✕</button>
-      </td>`;
-    tbody.appendChild(tr);
-  }
-}
-
-async function dismissAlert(id) {
-  await fetch(`/api/alerts/${id}`, { method: "DELETE" });
-  refreshAlerts();
-  refreshStats();
-}
-
-async function clearAlerts() {
-  await fetch("/api/alerts/", { method: "DELETE" });
-  refreshAlerts();
-  refreshStats();
-}
-
 // ── Devices ────────────────────────────────────────────────────────────
 async function refreshDevices() {
   const rows  = await apiFetch("/api/devices/");
@@ -281,7 +262,7 @@ async function refreshAll() {
     refreshDNS(),
     refreshDomainsChart(),
     refreshTimeline(),
-    refreshAlerts(),
+    refreshNonstandardPorts(),
     refreshMap(),
     refreshBlocklist(),
     refreshDevices(),
