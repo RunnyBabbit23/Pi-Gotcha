@@ -20,6 +20,10 @@ async def get_stats():
         "SELECT COUNT(*) as c FROM traffic"
     ))[0]["c"]
 
+    total_bytes = (await db.execute_fetchall(
+        "SELECT COALESCE(SUM(size), 0) as c FROM traffic"
+    ))[0]["c"]
+
     total_devices = (await db.execute_fetchall(
         "SELECT COUNT(*) as c FROM devices"
     ))[0]["c"]
@@ -37,6 +41,7 @@ async def get_stats():
         "blocked_queries": blocked_queries,
         "block_percent":   block_pct,
         "total_traffic":   total_traffic,
+        "total_bytes":     total_bytes,
         "total_devices":   total_devices,
         "blocklist_size":  blocklist_size,
     }

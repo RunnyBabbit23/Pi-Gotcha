@@ -1,9 +1,10 @@
 // Pi-Gotcha dashboard
 
 const REFRESH_MS = 5000;
-let domainsChart = null;
-let map          = null;
-let markers      = [];
+let domainsChart   = null;
+let timelineChart  = null;
+let map            = null;
+let markers        = [];
 
 // ── Clock ──────────────────────────────────────────────────────────────
 function updateClock() {
@@ -22,6 +23,13 @@ function fmt(ts) {
   return new Date(ts + "Z").toLocaleTimeString();
 }
 
+function fmtBytes(bytes) {
+  if (bytes === 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return (bytes / Math.pow(1024, i)).toFixed(1) + " " + units[i];
+}
+
 // ── Stats ──────────────────────────────────────────────────────────────
 async function refreshStats() {
   const s = await apiFetch("/api/stats/");
@@ -30,6 +38,7 @@ async function refreshStats() {
   document.getElementById("block-percent").textContent   = s.block_percent + "%";
   document.getElementById("total-devices").textContent   = s.total_devices;
   document.getElementById("blocklist-size").textContent  = s.blocklist_size;
+  document.getElementById("total-bytes").textContent     = fmtBytes(s.total_bytes);
 }
 
 // ── DNS Feed ───────────────────────────────────────────────────────────
@@ -83,6 +92,56 @@ async function refreshDomainsChart() {
       scales: {
         x: { ticks: { color: "#8b949e" }, grid: { color: "#30363d" } },
         y: { ticks: { color: "#c9d1d9" }, grid: { color: "#30363d" } },
+      }
+    }
+  });
+}
+
+// ── DNS Timeline ───────────────────────────────────────────────────────
+async function refreshTimeline() {
+  const data    = await apiFetch("/api/dns/timeline?hours=24");
+  const labels  = data.map(d => new Date(d.hour + "Z").toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+  const totals  = data.map(d => d.total);
+  const blocked = data.map(d => d.blocked);
+
+  if (timelineChart) {
+    timelineChart.data.labels                = labels;
+    timelineChart.data.datasets[0].data      = totals;
+    timelineChart.data.datasets[1].data      = blocked;
+    timelineChart.update();
+    return;
+  }
+
+  timelineChart = new Chart(document.getElementById("timeline-chart"), {
+    type: "line",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Total",
+          data: totals,
+          borderColor: "#58a6ff",
+          backgroundColor: "#58a6ff22",
+          fill: true,
+          tension: 0.3,
+          pointRadius: 2,
+        },
+        {
+          label: "Blocked",
+          data: blocked,
+          borderColor: "#f85149",
+          backgroundColor: "#f8514922",
+          fill: true,
+          tension: 0.3,
+          pointRadius: 2,
+        }
+      ]
+    },
+    options: {
+      plugins: { legend: { labels: { color: "#8b949e" } } },
+      scales: {
+        x: { ticks: { color: "#8b949e", maxTicksLimit: 8 }, grid: { color: "#30363d" } },
+        y: { ticks: { color: "#8b949e" }, grid: { color: "#30363d" }, beginAtZero: true },
       }
     }
   });
@@ -180,6 +239,7 @@ async function refreshAll() {
     refreshStats(),
     refreshDNS(),
     refreshDomainsChart(),
+    refreshTimeline(),
     refreshMap(),
     refreshBlocklist(),
     refreshDevices(),

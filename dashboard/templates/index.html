@@ -22,6 +22,7 @@
     <div class="stat-card"><div class="stat-value" id="block-percent">--%</div><div class="stat-label">Block Rate</div></div>
     <div class="stat-card"><div class="stat-value" id="total-devices">--</div><div class="stat-label">Devices Seen</div></div>
     <div class="stat-card"><div class="stat-value" id="blocklist-size">--</div><div class="stat-label">On Blocklist</div></div>
+    <div class="stat-card"><div class="stat-value" id="total-bytes">--</div><div class="stat-label">Data Monitored</div></div>
   </section>
 
   <main>
@@ -41,6 +42,12 @@
       <div class="panel">
         <h2>Top Domains</h2>
         <canvas id="domains-chart" height="200"></canvas>
+      </div>
+
+      <!-- Activity Timeline -->
+      <div class="panel">
+        <h2>DNS Activity (Last 24h)</h2>
+        <canvas id="timeline-chart" height="160"></canvas>
       </div>
     </div>
 

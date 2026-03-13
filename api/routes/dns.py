@@ -27,6 +27,23 @@ async def top_domains(limit: int = 20):
     return [dict(r) for r in rows]
 
 
+@router.get("/timeline")
+async def query_timeline(hours: int = 24):
+    db = await get_db()
+    rows = await db.execute_fetchall(
+        """SELECT strftime('%Y-%m-%dT%H:00:00', timestamp) as hour,
+                  COUNT(*) as total,
+                  SUM(blocked) as blocked
+           FROM dns_queries
+           WHERE timestamp >= datetime('now', '-' || ? || ' hours')
+           GROUP BY hour
+           ORDER BY hour ASC""",
+        (hours,)
+    )
+    await db.close()
+    return [dict(r) for r in rows]
+
+
 @router.get("/top-clients")
 async def top_clients(limit: int = 20):
     db   = await get_db()
