@@ -13,6 +13,7 @@ from dnslib import DNSRecord, RR, QTYPE, A
 
 from config import LISTEN_HOST, DNS_PORT, UPSTREAM_DNS, DB_PATH
 from blocking.firewall import is_blocked
+from ioc.checker import scan_domain
 
 
 def log_query(client_ip: str, domain: str, qtype: str, blocked: bool, response_ip: str = ""):
@@ -56,6 +57,7 @@ def handle_query(data: bytes, client_addr: tuple) -> bytes:
         reply = request.reply()
         reply.header.rcode = dnslib.RCODE.NXDOMAIN
         log_query(client_ip, domain, qtype, blocked=True)
+        scan_domain(client_ip, domain, blocked=True)
         print(f"[BLOCKED]   {client_ip} → {domain}")
         return reply.pack()
 
@@ -68,6 +70,7 @@ def handle_query(data: bytes, client_addr: tuple) -> bytes:
                 response_ip = str(rr.rdata)
                 break
         log_query(client_ip, domain, qtype, blocked=False, response_ip=response_ip)
+        scan_domain(client_ip, domain, blocked=False)
         print(f"[QUERY]     {client_ip} → {domain} ({response_ip})")
         return response_data
     except Exception as e:

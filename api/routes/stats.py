@@ -32,6 +32,14 @@ async def get_stats():
         "SELECT COUNT(*) as c FROM blocklist"
     ))[0]["c"]
 
+    total_alerts = (await db.execute_fetchall(
+        "SELECT COUNT(*) as c FROM alerts"
+    ))[0]["c"]
+
+    ioc_indicators = (await db.execute_fetchall(
+        "SELECT COUNT(*) as c FROM ioc_feeds"
+    ))[0]["c"]
+
     await db.close()
 
     block_pct = round((blocked_queries / total_queries * 100), 1) if total_queries else 0
@@ -44,4 +52,6 @@ async def get_stats():
         "total_bytes":     total_bytes,
         "total_devices":   total_devices,
         "blocklist_size":  blocklist_size,
+        "total_alerts":    total_alerts,
+        "ioc_indicators":  ioc_indicators,
     }

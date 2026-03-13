@@ -11,6 +11,7 @@ import uvicorn
 from database.db import init_db
 from dns_server.server import start_dns_server
 from capture.sniffer import start_sniffer
+from ioc.feeds import start_feed_updater
 from api.app import app
 from config import API_PORT
 
@@ -29,6 +30,10 @@ async def main():
     # Packet sniffer in a background thread
     sniff_thread = threading.Thread(target=start_sniffer, daemon=True)
     sniff_thread.start()
+
+    # IOC feed updater in a background thread
+    ioc_thread = threading.Thread(target=start_feed_updater, daemon=True)
+    ioc_thread.start()
 
     # FastAPI in a background thread
     api_thread = threading.Thread(target=run_api, daemon=True)

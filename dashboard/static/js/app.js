@@ -39,6 +39,10 @@ async function refreshStats() {
   document.getElementById("total-devices").textContent   = s.total_devices;
   document.getElementById("blocklist-size").textContent  = s.blocklist_size;
   document.getElementById("total-bytes").textContent     = fmtBytes(s.total_bytes);
+  document.getElementById("total-alerts").textContent    = s.total_alerts.toLocaleString();
+  document.getElementById("ioc-indicators").textContent  = s.ioc_indicators.toLocaleString();
+  // Highlight the alerts card if there are active alerts
+  document.getElementById("alerts-stat-card").classList.toggle("has-alerts", s.total_alerts > 0);
 }
 
 // ── DNS Feed ───────────────────────────────────────────────────────────
@@ -218,6 +222,43 @@ async function unblock(domain) {
   refreshAll();
 }
 
+// ── IOC Alerts ─────────────────────────────────────────────────────────
+const SEVERITY_CLASS = { high: "badge-blocked", medium: "badge-medium", low: "badge-low" };
+
+async function refreshAlerts() {
+  const rows  = await apiFetch("/api/alerts/?limit=50");
+  const tbody = document.querySelector("#alerts-table tbody");
+  tbody.innerHTML = "";
+  for (const r of rows) {
+    const cls = SEVERITY_CLASS[r.severity] || "";
+    const tr  = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${fmt(r.timestamp)}</td>
+      <td>${r.client_ip}</td>
+      <td><b>${r.indicator}</b></td>
+      <td>${r.ioc_source}</td>
+      <td><span class="${cls}">${r.severity.toUpperCase()}</span></td>
+      <td class="detail-cell">${r.detail || ""}</td>
+      <td>
+        <button onclick="quickBlock('${r.indicator}')">Block</button>
+        <button class="danger" onclick="dismissAlert(${r.id})">✕</button>
+      </td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+async function dismissAlert(id) {
+  await fetch(`/api/alerts/${id}`, { method: "DELETE" });
+  refreshAlerts();
+  refreshStats();
+}
+
+async function clearAlerts() {
+  await fetch("/api/alerts/", { method: "DELETE" });
+  refreshAlerts();
+  refreshStats();
+}
+
 // ── Devices ────────────────────────────────────────────────────────────
 async function refreshDevices() {
   const rows  = await apiFetch("/api/devices/");
@@ -240,6 +281,7 @@ async function refreshAll() {
     refreshDNS(),
     refreshDomainsChart(),
     refreshTimeline(),
+    refreshAlerts(),
     refreshMap(),
     refreshBlocklist(),
     refreshDevices(),

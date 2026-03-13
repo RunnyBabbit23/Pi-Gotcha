@@ -23,6 +23,8 @@
     <div class="stat-card"><div class="stat-value" id="total-devices">--</div><div class="stat-label">Devices Seen</div></div>
     <div class="stat-card"><div class="stat-value" id="blocklist-size">--</div><div class="stat-label">On Blocklist</div></div>
     <div class="stat-card"><div class="stat-value" id="total-bytes">--</div><div class="stat-label">Data Monitored</div></div>
+    <div class="stat-card" id="alerts-stat-card"><div class="stat-value" id="total-alerts">--</div><div class="stat-label">IOC Alerts</div></div>
+    <div class="stat-card"><div class="stat-value" id="ioc-indicators">--</div><div class="stat-label">IOC Indicators</div></div>
   </section>
 
   <main>
@@ -49,10 +51,20 @@
         <h2>DNS Activity (Last 24h)</h2>
         <canvas id="timeline-chart" height="160"></canvas>
       </div>
+
     </div>
 
     <!-- Right column -->
     <div class="col">
+
+      <!-- IOC Alerts -->
+      <div class="panel">
+        <h2>IOC Alerts <button class="btn-small danger" onclick="clearAlerts()">Clear All</button></h2>
+        <table id="alerts-table">
+          <thead><tr><th>Time</th><th>Client</th><th>Indicator</th><th>Source</th><th>Severity</th><th>Detail</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
 
       <!-- World Map -->
       <div class="panel">
